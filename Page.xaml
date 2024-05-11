@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Vehicle.Page">
+
+    <ScrollView>
+        
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+            
+
+            <Button Text="Load Invoices" Clicked="LoadInvoicesButton_Clicked" />
+            <ListView Grid.Column="0" x:Name="InvoicesListView"
+                ItemsSource="{Binding .}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="Invoice: " Grid.Column="0" VerticalOptions="Center" />
+                                <Label  Text="{Binding IdInvoice}"  Grid.Column="1" VerticalOptions="Center" />
+                                
+
+                           
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
