@@ -15,5 +15,9 @@
     Title="HOES"
     ContentTemplate="{DataTemplate local:Page}"
     Route="Page" />
+    <ShellContent
+    Title="HOES2"
+    ContentTemplate="{DataTemplate local:LoginPage}"
+    Route="LoginPage" />
 
 </Shell>

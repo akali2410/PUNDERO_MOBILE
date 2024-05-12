@@ -15,7 +15,7 @@ namespace Vehicle
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-            
+            builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<Page>();
             builder.Services.AddSingleton<Invoice>();
             builder.Services.AddSingleton<PunderoApiService>(_ => new PunderoApiService("http://10.0.2.2:8515"));
