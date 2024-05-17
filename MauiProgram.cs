@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Vehicle;
 
 namespace Vehicle
 {
@@ -17,7 +18,10 @@ namespace Vehicle
                 });
             builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<Page>();
+            builder.Services.AddSingleton<MapPage>();
             builder.Services.AddSingleton<Invoice>();
+            builder.Services.AddSingleton<IMap>(Map.Default);
+            builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
             builder.Services.AddSingleton<PunderoApiService>(_ => new PunderoApiService("http://10.0.2.2:8515"));
             
 
