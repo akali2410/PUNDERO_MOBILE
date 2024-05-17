@@ -28,7 +28,7 @@ namespace Vehicle
          public async Task<List<Invoice>> GetInvoicesAsync()
           {
               
-              var url = _baseUrl + $"/api/Invoice/GetInvoices"; // Replace with your actual API endpoint
+              var url = _baseUrl + $"/api/Invoice/GetInvoices";
 
               try
               {
