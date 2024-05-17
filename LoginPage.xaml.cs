@@ -53,7 +53,7 @@ public partial class LoginPage : ContentPage
                         SecureStorage.SetAsync("authToken", loginResponse.TokenValue);
 
                         // Navigate to main page or perform other actions with the token
-                        var mainPage = new MainPage();
+                        var mainPage = new MapPage();
                         Navigation.PushAsync(mainPage);
 
                     }
