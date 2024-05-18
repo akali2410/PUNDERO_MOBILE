@@ -1,5 +1,9 @@
 using Newtonsoft.Json;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Devices.Sensors;
 using System.Text;
+using System.Diagnostics;
+using Microsoft.Maui.Maps;
 
 namespace Vehicle;
 
@@ -8,11 +12,20 @@ public partial class MapPage : ContentPage
     private CancellationTokenSource _cancelTokenSource;
     private bool _isCheckingLocation;
     private readonly HttpClient _httpClient;
+    private Pin currentLocationPin;
 
     public MapPage()
     {
         InitializeComponent();
         _httpClient = new HttpClient();
+        ConfigureMap();
+    }
+
+    private void ConfigureMap()
+    {
+        var sarajevoLocation = new Location(43.8563, 18.4131);
+        var mapSpan = MapSpan.FromCenterAndRadius(sarajevoLocation, Distance.FromKilometers(2));
+        map.MoveToRegion(mapSpan);
     }
 
     private async void OnToggled(object sender, ToggledEventArgs e)
@@ -29,7 +42,7 @@ public partial class MapPage : ContentPage
         }
     }
 
-    public async Task GetCurrentLocation()
+    private async Task GetCurrentLocation()
     {
         try
         {
@@ -37,12 +50,15 @@ public partial class MapPage : ContentPage
             {
                 _cancelTokenSource = new CancellationTokenSource(); // New token for each request
 
-                GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
-                Location location = await Geolocation.Default.GetLocationAsync(request, _cancelTokenSource.Token);
+                var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                var location = await Geolocation.GetLocationAsync(request, _cancelTokenSource.Token);
 
                 if (location != null)
                 {
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+                    Debug.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+
+                    // Initialize or update the current location pin
+                    UpdateMapWithCurrentLocation(location.Latitude, location.Longitude);
 
                     // Call method to update location in database
                     await UpdateLocationInDatabase(location.Latitude, location.Longitude);
@@ -53,19 +69,19 @@ public partial class MapPage : ContentPage
         }
         catch (FeatureNotSupportedException fnsEx)
         {
-            Console.WriteLine($"Error Location: {fnsEx.Message}");
+            Debug.WriteLine($"Error Location: {fnsEx.Message}");
         }
         catch (FeatureNotEnabledException fneEx)
         {
-            Console.WriteLine($"Error Location: {fneEx.Message}");
+            Debug.WriteLine($"Error Location: {fneEx.Message}");
         }
         catch (PermissionException pEx)
         {
-            Console.WriteLine($"Error Location: {pEx.Message}");
+            Debug.WriteLine($"Error Location: {pEx.Message}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error Location: {ex.Message}");
+            Debug.WriteLine($"Error Location: {ex.Message}");
         }
         finally
         {
@@ -73,61 +89,88 @@ public partial class MapPage : ContentPage
         }
     }
 
+    private void UpdateMapWithCurrentLocation(double latitude, double longitude)
+    {
+        var location = new Location(latitude, longitude);
+
+        if (location != null)
+        {
+            if (currentLocationPin == null)
+            {
+                currentLocationPin = new Pin
+                {
+                    Label = "Current Location",
+                    Type = PinType.SavedPin,
+                    Location = location,
+                    
+                };
+                map.Pins.Add(currentLocationPin);
+            }
+            else
+            {
+                currentLocationPin.Location = location;
+            }
+
+            // Move the map to the current location
+            //map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromMeters(500)));
+        }
+    }
+
     private async Task UpdateLocationInDatabase(double latitude, double longitude)
     {
         try
         {
-            Console.WriteLine("Starting UpdateLocationInDatabase");
+            Debug.WriteLine("Starting UpdateLocationInDatabase");
 
             var authToken = await SecureStorage.GetAsync("authToken");
             if (authToken == null)
             {
-                Console.WriteLine("Auth token is missing.");
+                Debug.WriteLine("Auth token is missing.");
                 return;
             }
-            Console.WriteLine($"Auth token retrieved: {authToken}");
+            Debug.WriteLine($"Auth token retrieved: {authToken}");
 
             var updateLocationDto = new UpdateLocationDto
             {
                 Latitude = latitude,
                 Longitude = longitude
             };
-            Console.WriteLine($"UpdateLocationDto created: Latitude={updateLocationDto.Latitude}, Longitude={updateLocationDto.Longitude}");
+            Debug.WriteLine($"UpdateLocationDto created: Latitude={updateLocationDto.Latitude}, Longitude={updateLocationDto.Longitude}");
 
             var json = JsonConvert.SerializeObject(updateLocationDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            Console.WriteLine($"JSON content created: {json}");
+            Debug.WriteLine($"JSON content created: {json}");
 
             if (_httpClient == null)
             {
-                Console.WriteLine("HTTP Client is null");
+                Debug.WriteLine("HTTP Client is null");
                 return;
             }
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("my-auth-token", authToken);
-            Console.WriteLine("Custom authorization header set");
+            Debug.WriteLine("Custom authorization header set");
 
             var response = await _httpClient.PutAsync("http://10.0.2.2:8515/api/Location/update", content);
-            Console.WriteLine("Request sent");
+            Debug.WriteLine("Request sent");
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Location updated successfully.");
+                Debug.WriteLine("Location updated successfully.");
             }
             else
             {
-                Console.WriteLine($"Failed to update location. StatusCode: {response.StatusCode}");
+                Debug.WriteLine($"Failed to update location. StatusCode: {response.StatusCode}");
                 var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Response content: {responseContent}");
+                Debug.WriteLine($"Response content: {responseContent}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error updating location: {ex.Message}");
+            Debug.WriteLine($"Error updating location: {ex.Message}");
             if (ex.InnerException != null)
             {
-                Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
             }
         }
     }

@@ -6,6 +6,15 @@
     xmlns:local="clr-namespace:Vehicle"
     Shell.FlyoutBehavior="Flyout"
     Title="Vehicle">
+   
+
+    <!-- Flyout Header -->
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="#1976d2" Padding="10">
+            <Label Text="PUNDERO" TextColor="White" FontSize="24" VerticalOptions="Center" />
+        </Grid>
+    </Shell.FlyoutHeader>
+    
 
     <ShellContent
         Title="Home"
@@ -13,12 +22,8 @@
         Route="MainPage" />
     <ShellContent
     Title="Invoice"
-    ContentTemplate="{DataTemplate local:Page}"
-    Route="Page" />
-    <ShellContent
-    Title="Login"
-    ContentTemplate="{DataTemplate local:LoginPage}"
-    Route="LoginPage" />
+    ContentTemplate="{DataTemplate local:InvoicePage}"
+    Route="InvoicePage" />
     <ShellContent
     Title="Map"
     ContentTemplate="{DataTemplate local:MapPage}"
