@@ -1,6 +1,6 @@
 namespace Vehicle;
 
-public partial class Page : ContentPage
+public partial class InvoicePage : ContentPage
 {
 
    
@@ -8,12 +8,12 @@ public partial class Page : ContentPage
 
    
 
-    public Page(PunderoApiService punderoApiService) // Inject PunderoApiService in constructor
+    public InvoicePage(PunderoApiService punderoApiService) // Inject PunderoApiService in constructor
         {
             InitializeComponent();
             _punderoApiService = punderoApiService;
              
-    }
+        }
 
         private async void LoadInvoicesButton_Clicked(object sender, EventArgs e)
         {
@@ -32,6 +32,10 @@ public partial class Page : ContentPage
                 await DisplayAlert("Error", "Failed to retrieve invoices.", "OK");
             }
         }
-    }
+    
+ }
+
+
+    
 
 

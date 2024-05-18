@@ -29,10 +29,7 @@ public partial class LoginPage : ContentPage
 
         try
         {
-            var url = "http://10.0.2.2:8515/auth/login";
-
-            // Base64 encode username and password for basic obfuscation (not a replacement for proper hashing)
-        
+            var url = "http://10.0.2.2:8515/auth/login";               
             var loginRequest = new LoginRequest { Email = email, Password = password };
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
@@ -53,8 +50,8 @@ public partial class LoginPage : ContentPage
                         SecureStorage.SetAsync("authToken", loginResponse.TokenValue);
 
                         // Navigate to main page or perform other actions with the token
-                        var mainPage = new MapPage();
-                        Navigation.PushAsync(mainPage);
+                        Application.Current.MainPage = new AppShell();
+                        await Shell.Current.GoToAsync("//MapPage");
 
                     }
                     else
@@ -85,7 +82,7 @@ public partial class LoginPage : ContentPage
         }
     }
 
-    public class LoginResponse // Adapt this based on your actual Web API response structure
+    public class LoginResponse
     {
         public string TokenValue { get; set; }
     }
