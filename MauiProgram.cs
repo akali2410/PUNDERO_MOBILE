@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Vehicle;
 
+
 namespace Vehicle
 {
     public static class MauiProgram
@@ -19,7 +20,7 @@ namespace Vehicle
             builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<InvoicePage>();
             builder.Services.AddSingleton<MapPage>();
-            //builder.Services.AddSingleton<Invoice>();
+            
             builder.Services.AddSingleton<IMap>(Map.Default);
             builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
             builder.Services.AddSingleton<PunderoApiService>(_ => new PunderoApiService("http://10.0.2.2:8515"));

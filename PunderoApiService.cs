@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Vehicle.Models;
 
 
 
@@ -24,8 +26,24 @@ namespace Vehicle
             _baseUrl = baseUrl;
             _httpClient = new HttpClient();
         }
+        public async Task<List<InvoiceDto>> GetApprovedInvoicesForDriverAsync(int driverId)
+        {
+            var response = await _httpClient.GetAsync(_baseUrl + $"/api/Invoice/GetApprovedInvoicesForDriver/{driverId}");
+            response.EnsureSuccessStatusCode();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<InvoiceDto>>(jsonResponse);
+        }
 
-        public async Task<List<Invoice>> GetInvoicesAsync()
+        public async Task UpdateInvoiceStatusAsync(int invoiceId, int statusId)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(statusId), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync(_baseUrl + $"/api/Invoice/UpdateInvoiceStatus/{invoiceId}/status", content);
+            response.EnsureSuccessStatusCode();
+        }
+       
+    }
+}
+      /*  public async Task<List<Invoice>> GetInvoicesAsync()
         {
 
             var url = _baseUrl + $"/api/Invoice/GetInvoices";
@@ -93,9 +111,4 @@ namespace Vehicle
          }*/
 
 
-        }
-
-
-    }
-}
-
+ 

@@ -29,7 +29,7 @@ public partial class LoginPage : ContentPage
 
         try
         {
-            var url = "http://10.0.2.2:8515/auth/login";               
+            var url = "http://10.0.2.2:8515/auth/mobile/login";               
             var loginRequest = new LoginRequest { Email = email, Password = password };
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
@@ -47,7 +47,8 @@ public partial class LoginPage : ContentPage
                     var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
                     if (loginResponse?.TokenValue != null)
                     {
-                        SecureStorage.SetAsync("authToken", loginResponse.TokenValue);
+                        await SecureStorage.SetAsync("authToken", loginResponse.TokenValue);
+                        await SecureStorage.SetAsync("driverId", loginResponse.DriverId.ToString());
 
                         // Navigate to main page or perform other actions with the token
                         Application.Current.MainPage = new AppShell();
@@ -85,6 +86,7 @@ public partial class LoginPage : ContentPage
     public class LoginResponse
     {
         public string TokenValue { get; set; }
+        public int? DriverId { get; set; }
     }
 
     public class LoginRequest

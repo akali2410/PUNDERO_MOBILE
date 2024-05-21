@@ -1,34 +1,30 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Vehicle.InvoicePage">
-
-    <ScrollView>
-        
-        <VerticalStackLayout
-            Padding="30,0"
-            Spacing="25">
-            
-
-            <Button Text="Load Invoices" Clicked="LoadInvoicesButton_Clicked" />
-            <ListView Grid.Column="0" x:Name="InvoicesListView"
-                ItemsSource="{Binding .}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <StackLayout>
-                                <Label Text="Invoice: " Grid.Column="0" VerticalOptions="Center" />
-                                <Label  Text="{Binding IdInvoice}"  Grid.Column="1" VerticalOptions="Center" />
-                                
-
-                           
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-        </VerticalStackLayout>
-    </ScrollView>
-
+             x:Class="Vehicle.InvoicePage"
+             Title="Invoices">
+    <ContentPage.Content>
+        <CollectionView ItemsSource="{Binding Invoices}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" Margin="10" BorderColor="LightGray" CornerRadius="10">
+                        <StackLayout>
+                            <Label Text="Invoice ID:" FontAttributes="Bold"/>
+                            <Label Text="{Binding IdInvoice}" />
+                            <Label Text="Store Name:" FontAttributes="Bold"/>
+                            <Label Text="{Binding StoreName}" />
+                            <Label Text="Warehouse Name:" FontAttributes="Bold"/>
+                            <Label Text="{Binding WarehouseName}" />
+                            <Label Text="Issue Date:" FontAttributes="Bold"/>
+                            <Label Text="{Binding IssueDate, StringFormat='{0:dd/MM/yyyy}'}" />
+                            <Button Text="Mark as In Transport"
+                                    BackgroundColor="LightBlue"
+                                    CommandParameter="{Binding IdInvoice}"
+                                    Clicked="OnChangeStatusButtonClicked"/>
+                        </StackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </ContentPage.Content>
 </ContentPage>
