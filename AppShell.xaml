@@ -25,6 +25,10 @@
     ContentTemplate="{DataTemplate local:InvoicePage}"
     Route="InvoicePage" />
     <ShellContent
+    Title="In-Transit Invoices"
+    ContentTemplate="{DataTemplate local:InTransitInvoicePage}"
+    Route="InTransitInvoicePage" />
+    <ShellContent
     Title="Map"
     ContentTemplate="{DataTemplate local:MapPage}"
     Route="MapPage" />

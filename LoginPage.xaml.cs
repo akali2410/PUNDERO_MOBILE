@@ -29,7 +29,7 @@ public partial class LoginPage : ContentPage
 
         try
         {
-            var url = "http://10.0.2.2:8515/auth/mobile/login";               
+            var url = "http://localhost:8515/auth/mobile/login";           
             var loginRequest = new LoginRequest { Email = email, Password = password };
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
