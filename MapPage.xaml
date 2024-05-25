@@ -15,5 +15,6 @@
 
         <maps:Map x:Name="map" Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
 
+        <Button Text="Optimize Route" Clicked="OnOptimizeRouteButtonClicked" VerticalOptions="End" HorizontalOptions="Center" Margin="10"/>
     </Grid>
 </ContentPage>

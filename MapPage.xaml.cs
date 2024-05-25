@@ -6,6 +6,8 @@ using Microsoft.Maui.Maps;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Vehicle;
 
@@ -14,7 +16,6 @@ public partial class MapPage : ContentPage
     private CancellationTokenSource _cancelTokenSource;
     private bool _isCheckingLocation;
     private readonly HttpClient _httpClient;
-    private PunderoApiService _punderoApiService;
     private Circle currentLocationCircle;
     private Pin warehousePin;
 
@@ -25,6 +26,8 @@ public partial class MapPage : ContentPage
         ConfigureMap();
         LoadWarehouseLocation();
         LoadInTransitStores();
+
+        map.PropertyChanged += Map_PropertyChanged;
     }
 
     private void ConfigureMap()
@@ -37,12 +40,41 @@ public partial class MapPage : ContentPage
         currentLocationCircle = new Circle
         {
             Center = sarajevoLocation,
-            Radius = new Distance(10),// meters radius
+            Radius = new Distance(10), // meters radius
             StrokeColor = Colors.Blue,
             StrokeWidth = 2,
             FillColor = new Color(0, 0, 255) // Semi-transparent blue
         };
         map.MapElements.Add(currentLocationCircle);
+    }
+
+    private void Map_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "VisibleRegion")
+        {
+            UpdateCircleRadiusBasedOnZoom();
+        }
+    }
+
+    private void UpdateCircleRadiusBasedOnZoom()
+    {
+        if (map.VisibleRegion == null)
+        {
+            return;
+        }
+
+        var zoomLevel = map.VisibleRegion.Radius.Kilometers;
+
+        // Update the circle radius based on zoom level
+        var newRadius = CalculateRadius(zoomLevel);
+        currentLocationCircle.Radius = new Distance(newRadius);
+    }
+
+    private double CalculateRadius(double zoomLevel)
+    {
+        // Adjust this calculation based on your specific requirements
+        // Here, we set a minimum radius of 5 meters and increase it proportionally with zoom level
+        return Math.Max(5, zoomLevel * 50);
     }
 
     private async void LoadWarehouseLocation()
@@ -62,9 +94,9 @@ public partial class MapPage : ContentPage
                     Type = PinType.Place,
                     Location = location
                 };
-                 
+
                 map.Pins.Add(warehousePin);
-                map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(2)));
+               // map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(2)));
             });
         }
         catch (Exception ex)
@@ -79,7 +111,7 @@ public partial class MapPage : ContentPage
 
         if (_isCheckingLocation)
         {
-            await GetCurrentLocation();// Start location updates if toggle is on
+            await GetCurrentLocation(); // Start location updates if toggle is on
         }
         else
         {
@@ -107,7 +139,7 @@ public partial class MapPage : ContentPage
 
                     // Update the circle representing the current location
                     UpdateCurrentLocationCircle(location.Latitude, location.Longitude);
-                    LoadInTransitStores();
+                    LoadInTransitStores(); // Reload pins to reflect any changes
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(10)); // Wait 10 seconds before next request
@@ -151,7 +183,6 @@ public partial class MapPage : ContentPage
                 FillColor = new Color(0, 0, 255) // Semi-transparent blue
             };
             map.MapElements.Add(currentLocationCircle);
-
         }
         else
         {
@@ -226,28 +257,48 @@ public partial class MapPage : ContentPage
     {
         try
         {
+            map.Pins.Clear();
+            if (warehousePin != null)
+            {
+                map.Pins.Add(warehousePin);
+            }
             var authToken = await SecureStorage.GetAsync("authToken");
             if (authToken == null) return;
 
             var driverIdString = await SecureStorage.GetAsync("driverId");
             if (string.IsNullOrEmpty(driverIdString) || !int.TryParse(driverIdString, out var driverId)) return;
 
-            var response = await _httpClient.GetStringAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
-            var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(response);
+            HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No in-transit invoices found for the driver.");
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            var responseData = await response.Content.ReadAsStringAsync();
+            var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(responseData);
 
             Device.BeginInvokeOnMainThread(() =>
             {
+                // Clear all pins except the warehouse pin
+                
+
                 foreach (var invoice in invoices)
                 {
-                    var location = new Location(invoice.StoreLatitude, invoice.StoreLongitude);
-                    var pin = new Pin
+                    if (invoice.IdStatus == 3) // Only add pins for in-transit stores
                     {
-                        Label = invoice.StoreName,
-                        Type = PinType.Place,
-                        Location = location
-                    };
+                        var location = new Location(invoice.StoreLatitude, invoice.StoreLongitude);
+                        var pin = new Pin
+                        {
+                            Label = invoice.StoreName,
+                            Type = PinType.Place,
+                            Location = location,
+                            BindingContext = invoice.StoreName // Set the BindingContext to store the store name for easy reference
+                        };
 
-                    map.Pins.Add(pin);
+                        map.Pins.Add(pin);
+                    }
                 }
             });
         }
@@ -257,7 +308,201 @@ public partial class MapPage : ContentPage
         }
     }
 
+    // Optimized ROUTE API integration
+    private async Task<string> GetOptimizedRouteAsync(List<Location> locations)
+    {
+        if (locations.Count < 2)
+        {
+            Console.WriteLine("Insufficient locations to optimize route.");
+            return null;
+        }
 
+        var apiKey = "AIzaSyCj7-nNBHWtcscx1pCQBhUen9kNjMoB9pA"; // Replace with your actual API key
+
+        var waypoints = string.Join("|", locations.Skip(1).Take(locations.Count - 2).Select(loc => $"{loc.Latitude},{loc.Longitude}"));
+        var requestUri = $"https://maps.googleapis.com/maps/api/directions/json?origin={locations.First().Latitude},{locations.First().Longitude}&destination={locations.Last().Latitude},{locations.Last().Longitude}&waypoints=optimize:true|{waypoints}&key={apiKey}";
+
+        try
+        {
+            var response = await _httpClient.GetStringAsync(requestUri);
+            return response;
+        }
+        catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            Console.WriteLine($"Error getting optimized route: {httpEx.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting optimized route: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task DisplayOptimizedRoute(List<Location> locations)
+    {
+        var response = await GetOptimizedRouteAsync(locations);
+
+        if (response == null)
+        {
+            await DisplayAlert("Error", "Failed to get optimized route.", "OK");
+            return;
+        }
+
+        var directionsResponse = JsonConvert.DeserializeObject<GoogleDirectionsResponse>(response);
+        var route = directionsResponse.Routes.FirstOrDefault();
+
+        if (route == null)
+        {
+            await DisplayAlert("Error", "No routes found.", "OK");
+            return;
+        }
+
+        var polyline = new Microsoft.Maui.Controls.Maps.Polyline
+        {
+            StrokeColor = Colors.Blue,
+            StrokeWidth = 5
+        };
+
+        foreach (var leg in route.Legs)
+        {
+            foreach (var step in leg.Steps)
+            {
+                var points = DecodePolyline(step.Polyline.Points);
+                foreach (var point in points)
+                {
+                    polyline.Geopath.Add(new Location(point.Latitude, point.Longitude));
+                }
+            }
+        }
+
+        map.MapElements.Clear();
+        map.MapElements.Add(polyline);
+
+        // Ensure the current location circle remains visible
+        if (currentLocationCircle != null && !map.MapElements.Contains(currentLocationCircle))
+        {
+            map.MapElements.Add(currentLocationCircle);
+        }
+
+        // Re-add warehouse pin
+        if (warehousePin != null && !map.Pins.Contains(warehousePin))
+        {
+            map.Pins.Add(warehousePin);
+        }
+    }
+
+    private List<Location> DecodePolyline(string encodedPoints)
+    {
+        if (string.IsNullOrEmpty(encodedPoints))
+        {
+            return null;
+        }
+
+        var poly = new List<Location>();
+        var polylineChars = encodedPoints.ToCharArray();
+        var index = 0;
+        var currentLat = 0;
+        var currentLng = 0;
+
+        while (index < polylineChars.Length)
+        {
+            var sum = 0;
+            var shifter = 0;
+            int next5Bits;
+
+            do
+            {
+                next5Bits = polylineChars[index++] - 63;
+                sum |= (next5Bits & 31) << shifter;
+                shifter += 5;
+            } while (next5Bits >= 32 && index < polylineChars.Length);
+
+            if (index >= polylineChars.Length)
+            {
+                break;
+            }
+
+            currentLat += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+            sum = 0;
+            shifter = 0;
+
+            do
+            {
+                next5Bits = polylineChars[index++] - 63;
+                sum |= (next5Bits & 31) << shifter;
+                shifter += 5;
+            } while (next5Bits >= 32 && index < polylineChars.Length);
+
+            if (index >= polylineChars.Length && next5Bits >= 32)
+            {
+                break;
+            }
+
+            currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+            var lat = currentLat / 1E5;
+            var lng = currentLng / 1E5;
+            poly.Add(new Location(lat, lng));
+        }
+
+        return poly;
+    }
+
+    private async void OnOptimizeRouteButtonClicked(object sender, EventArgs e)
+    {
+        var locations = new List<Location>();
+
+        // Add current location
+        var currentLocation = await Geolocation.GetLastKnownLocationAsync();
+        if (currentLocation != null)
+        {
+            locations.Add(new Location(currentLocation.Latitude, currentLocation.Longitude));
+        }
+
+        // Add store locations
+        var driverIdString = await SecureStorage.GetAsync("driverId");
+        if (!string.IsNullOrEmpty(driverIdString) && int.TryParse(driverIdString, out var driverId))
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+                if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    response.EnsureSuccessStatusCode();
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(responseData);
+
+                    foreach (var invoice in invoices)
+                    {
+                        locations.Add(new Location(invoice.StoreLatitude, invoice.StoreLongitude));
+                    }
+                }
+            }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No in-transit invoices found for the driver.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting in-transit invoices: {ex.Message}");
+            }
+        }
+
+        // Add warehouse location
+        var warehouseResponse = await _httpClient.GetStringAsync("http://localhost:8515/api/Warehouses/GetWarehouseLocation");
+        var warehouse = JsonConvert.DeserializeObject<WarehouseDto>(warehouseResponse);
+        locations.Add(new Location(warehouse.Latitude, warehouse.Longitude));
+
+        // Ensure we have at least one location (warehouse) to route to
+        if (locations.Count < 2)
+        {
+            await DisplayAlert("Information", "No in-transit invoices found. Only routing to warehouse.", "OK");
+        }
+
+        await DisplayOptimizedRoute(locations);
+    }
 
     public void CancelRequest()
     {
@@ -278,5 +523,35 @@ public partial class MapPage : ContentPage
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Address { get; set; }
+    }
+
+    public class GoogleDirectionsResponse
+    {
+        [JsonProperty("routes")]
+        public List<Route> Routes { get; set; }
+    }
+
+    public class Route
+    {
+        [JsonProperty("legs")]
+        public List<Leg> Legs { get; set; }
+    }
+
+    public class Leg
+    {
+        [JsonProperty("steps")]
+        public List<Step> Steps { get; set; }
+    }
+
+    public class Step
+    {
+        [JsonProperty("polyline")]
+        public Polyline Polyline { get; set; }
+    }
+
+    public class Polyline
+    {
+        [JsonProperty("points")]
+        public string Points { get; set; }
     }
 }
