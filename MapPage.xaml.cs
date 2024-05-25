@@ -96,7 +96,6 @@ public partial class MapPage : ContentPage
                 };
 
                 map.Pins.Add(warehousePin);
-               // map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(2)));
             });
         }
         catch (Exception ex)
@@ -281,9 +280,6 @@ public partial class MapPage : ContentPage
 
             Device.BeginInvokeOnMainThread(() =>
             {
-                // Clear all pins except the warehouse pin
-                
-
                 foreach (var invoice in invoices)
                 {
                     if (invoice.IdStatus == 3) // Only add pins for in-transit stores
@@ -317,7 +313,7 @@ public partial class MapPage : ContentPage
             return null;
         }
 
-        var apiKey = "AIzaSyCj7-nNBHWtcscx1pCQBhUen9kNjMoB9pA"; // Replace with your actual API key
+        var apiKey = "AIzaSyCj7-nNBHWtcscx1pCQBhUen9kNjMoB9pA"; // API KEY
 
         var waypoints = string.Join("|", locations.Skip(1).Take(locations.Count - 2).Select(loc => $"{loc.Latitude},{loc.Longitude}"));
         var requestUri = $"https://maps.googleapis.com/maps/api/directions/json?origin={locations.First().Latitude},{locations.First().Longitude}&destination={locations.Last().Latitude},{locations.Last().Longitude}&waypoints=optimize:true|{waypoints}&key={apiKey}";
