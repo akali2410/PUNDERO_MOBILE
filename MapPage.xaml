@@ -9,9 +9,10 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            
         </Grid.RowDefinitions>
 
-        <Switch x:Name="locationToggle" Toggled="OnToggled" Grid.Row="0" Margin="0" />
+        <Switch x:Name="locationToggle" Toggled="OnToggled" Grid.Row="0" Margin="0"/>
 
         <maps:Map x:Name="map" Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
 
