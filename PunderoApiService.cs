@@ -43,11 +43,14 @@ namespace Vehicle
         public class InvoiceDto
         {
             public int IdInvoice { get; set; }
-            public int? IdDriver { get; set; } // Make it nullable
-            public int IdStatus { get; set; }
+            public int? IdDriver { get; set; }
+            public int? IdStatus { get; set; }
             public string StoreName { get; set; }
             public string WarehouseName { get; set; }
             public DateTime IssueDate { get; set; }
+            public double StoreLatitude { get; set; }
+            public double StoreLongitude { get; set; }
         }
+
     }
 }
