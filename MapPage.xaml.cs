@@ -16,7 +16,6 @@ public partial class MapPage : ContentPage
     private CancellationTokenSource _cancelTokenSource;
     private bool _isCheckingLocation;
     private readonly HttpClient _httpClient;
-    private PunderoApiService _punderoApiService;
     private Circle currentLocationCircle;
     private Pin warehousePin;
 
@@ -41,7 +40,7 @@ public partial class MapPage : ContentPage
         currentLocationCircle = new Circle
         {
             Center = sarajevoLocation,
-            Radius = new Distance(10),// meters radius
+            Radius = new Distance(10), // meters radius
             StrokeColor = Colors.Blue,
             StrokeWidth = 2,
             FillColor = new Color(0, 0, 255) // Semi-transparent blue
@@ -95,9 +94,9 @@ public partial class MapPage : ContentPage
                     Type = PinType.Place,
                     Location = location
                 };
-                 
+
                 map.Pins.Add(warehousePin);
-                map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(2)));
+               // map.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(2)));
             });
         }
         catch (Exception ex)
@@ -112,7 +111,7 @@ public partial class MapPage : ContentPage
 
         if (_isCheckingLocation)
         {
-            await GetCurrentLocation();// Start location updates if toggle is on
+            await GetCurrentLocation(); // Start location updates if toggle is on
         }
         else
         {
@@ -140,7 +139,7 @@ public partial class MapPage : ContentPage
 
                     // Update the circle representing the current location
                     UpdateCurrentLocationCircle(location.Latitude, location.Longitude);
-                    LoadInTransitStores();
+                    LoadInTransitStores(); // Reload pins to reflect any changes
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(10)); // Wait 10 seconds before next request
@@ -184,7 +183,6 @@ public partial class MapPage : ContentPage
                 FillColor = new Color(0, 0, 255) // Semi-transparent blue
             };
             map.MapElements.Add(currentLocationCircle);
-
         }
         else
         {
@@ -259,28 +257,48 @@ public partial class MapPage : ContentPage
     {
         try
         {
+            map.Pins.Clear();
+            if (warehousePin != null)
+            {
+                map.Pins.Add(warehousePin);
+            }
             var authToken = await SecureStorage.GetAsync("authToken");
             if (authToken == null) return;
 
             var driverIdString = await SecureStorage.GetAsync("driverId");
             if (string.IsNullOrEmpty(driverIdString) || !int.TryParse(driverIdString, out var driverId)) return;
 
-            var response = await _httpClient.GetStringAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
-            var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(response);
+            HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No in-transit invoices found for the driver.");
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            var responseData = await response.Content.ReadAsStringAsync();
+            var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(responseData);
 
             Device.BeginInvokeOnMainThread(() =>
             {
+                // Clear all pins except the warehouse pin
+                
+
                 foreach (var invoice in invoices)
                 {
-                    var location = new Location(invoice.StoreLatitude, invoice.StoreLongitude);
-                    var pin = new Pin
+                    if (invoice.IdStatus == 3) // Only add pins for in-transit stores
                     {
-                        Label = invoice.StoreName,
-                        Type = PinType.Place,
-                        Location = location
-                    };
+                        var location = new Location(invoice.StoreLatitude, invoice.StoreLongitude);
+                        var pin = new Pin
+                        {
+                            Label = invoice.StoreName,
+                            Type = PinType.Place,
+                            Location = location,
+                            BindingContext = invoice.StoreName // Set the BindingContext to store the store name for easy reference
+                        };
 
-                    map.Pins.Add(pin);
+                        map.Pins.Add(pin);
+                    }
                 }
             });
         }
@@ -289,8 +307,16 @@ public partial class MapPage : ContentPage
             Console.WriteLine($"Error loading in-transit stores: {ex.Message}");
         }
     }
+
+    // Optimized ROUTE API integration
     private async Task<string> GetOptimizedRouteAsync(List<Location> locations)
     {
+        if (locations.Count < 2)
+        {
+            Console.WriteLine("Insufficient locations to optimize route.");
+            return null;
+        }
+
         var apiKey = "AIzaSyCj7-nNBHWtcscx1pCQBhUen9kNjMoB9pA"; // Replace with your actual API key
 
         var waypoints = string.Join("|", locations.Skip(1).Take(locations.Count - 2).Select(loc => $"{loc.Latitude},{loc.Longitude}"));
@@ -300,6 +326,11 @@ public partial class MapPage : ContentPage
         {
             var response = await _httpClient.GetStringAsync(requestUri);
             return response;
+        }
+        catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            Console.WriteLine($"Error getting optimized route: {httpEx.Message}");
+            return null;
         }
         catch (Exception ex)
         {
@@ -347,9 +378,17 @@ public partial class MapPage : ContentPage
 
         map.MapElements.Clear();
         map.MapElements.Add(polyline);
+
+        // Ensure the current location circle remains visible
         if (currentLocationCircle != null && !map.MapElements.Contains(currentLocationCircle))
         {
             map.MapElements.Add(currentLocationCircle);
+        }
+
+        // Re-add warehouse pin
+        if (warehousePin != null && !map.Pins.Contains(warehousePin))
+        {
+            map.Pins.Add(warehousePin);
         }
     }
 
@@ -426,12 +465,28 @@ public partial class MapPage : ContentPage
         var driverIdString = await SecureStorage.GetAsync("driverId");
         if (!string.IsNullOrEmpty(driverIdString) && int.TryParse(driverIdString, out var driverId))
         {
-            var response = await _httpClient.GetStringAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
-            var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(response);
-
-            foreach (var invoice in invoices)
+            try
             {
-                locations.Add(new Location(invoice.StoreLatitude, invoice.StoreLongitude));
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+                if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    response.EnsureSuccessStatusCode();
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    var invoices = JsonConvert.DeserializeObject<List<PunderoApiService.InvoiceDto>>(responseData);
+
+                    foreach (var invoice in invoices)
+                    {
+                        locations.Add(new Location(invoice.StoreLatitude, invoice.StoreLongitude));
+                    }
+                }
+            }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No in-transit invoices found for the driver.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting in-transit invoices: {ex.Message}");
             }
         }
 
@@ -439,6 +494,12 @@ public partial class MapPage : ContentPage
         var warehouseResponse = await _httpClient.GetStringAsync("http://localhost:8515/api/Warehouses/GetWarehouseLocation");
         var warehouse = JsonConvert.DeserializeObject<WarehouseDto>(warehouseResponse);
         locations.Add(new Location(warehouse.Latitude, warehouse.Longitude));
+
+        // Ensure we have at least one location (warehouse) to route to
+        if (locations.Count < 2)
+        {
+            await DisplayAlert("Information", "No in-transit invoices found. Only routing to warehouse.", "OK");
+        }
 
         await DisplayOptimizedRoute(locations);
     }
