@@ -267,7 +267,7 @@ public partial class MapPage : ContentPage
             var driverIdString = await SecureStorage.GetAsync("driverId");
             if (string.IsNullOrEmpty(driverIdString) || !int.TryParse(driverIdString, out var driverId)) return;
 
-            HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/GetInTransitInvoicesForDriver/{driverId}");
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 Console.WriteLine("No in-transit invoices found for the driver.");
@@ -463,7 +463,7 @@ public partial class MapPage : ContentPage
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/getInTransitInvoicesForDriver/{driverId}");
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:8515/api/Invoice/GetInTransitInvoicesForDriver/{driverId}");
                 if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
                 {
                     response.EnsureSuccessStatusCode();

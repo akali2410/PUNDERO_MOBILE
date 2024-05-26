@@ -29,7 +29,7 @@ public partial class LoginPage : ContentPage
 
         try
         {
-            var url = "http://localhost:8515/auth/mobile/login";           
+            var url = "http://localhost:8515/api/Auth/mobile/login";           
             var loginRequest = new LoginRequest { Email = email, Password = password };
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
@@ -52,7 +52,7 @@ public partial class LoginPage : ContentPage
 
                         // Navigate to main page or perform other actions with the token
                         Application.Current.MainPage = new AppShell();
-                        await Shell.Current.GoToAsync("//MapPage");
+                        await Shell.Current.GoToAsync("//MainPage");
 
                     }
                     else
