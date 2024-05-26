@@ -288,7 +288,7 @@ public partial class MapPage : ContentPage
                         var pin = new Pin
                         {
                             Label = invoice.StoreName,
-                            Type = PinType.Place,
+                            Type = PinType.Place, 
                             Location = location,
                             BindingContext = invoice.StoreName // Set the BindingContext to store the store name for easy reference
                         };

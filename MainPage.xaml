@@ -8,7 +8,7 @@
             Padding="30,0"
             Spacing="25">
             <Image
-                Source="logo_blue.png"
+                Source="logo_blue2.png"
                 HeightRequest="250"
                 Aspect="AspectFit"
                 SemanticProperties.Description="dot net bot in a race car number eight" />

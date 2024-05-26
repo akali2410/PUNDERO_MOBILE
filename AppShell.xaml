@@ -7,34 +7,38 @@
     Shell.FlyoutBehavior="Flyout"
     Title="Vehicle">
    
-
-    <!-- Flyout Header -->
     <Shell.FlyoutHeader>
         <Grid BackgroundColor="#1976d2" Padding="10">
             <Label Text="PUNDERO" TextColor="White" FontSize="24" VerticalOptions="Center" />
         </Grid>
     </Shell.FlyoutHeader>
     
-
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
     <ShellContent
-    Title="Approved Invoices"
-    ContentTemplate="{DataTemplate local:InvoicePage}"
-    Route="InvoicePage" />
+        Title="Approved Invoices"
+        ContentTemplate="{DataTemplate local:InvoicePage}"
+        Route="InvoicePage" />
     <ShellContent
-    Title="In Transit Invoices"
-    ContentTemplate="{DataTemplate local:InTransitInvoicePage}"
-    Route="InTransitInvoicePage" />
+        Title="In Transit Invoices"
+        ContentTemplate="{DataTemplate local:InTransitInvoicePage}"
+        Route="InTransitInvoicePage" />
     <ShellContent
-    Title="Map"
-    ContentTemplate="{DataTemplate local:MapPage}"
-    Route="MapPage" />
+        Title="Map"
+        ContentTemplate="{DataTemplate local:MapPage}"
+        Route="MapPage"/>
+        
     <Shell.FlyoutFooter>
         <Grid BackgroundColor="Red" Padding="5">
-            <Button Text="SIGN OUT" Clicked="OnSignOutClicked"  BackgroundColor="red" TextColor="White" FontSize="15" FontAttributes="Bold" VerticalOptions="Center" />
+            <Button Text="SIGN OUT" 
+                    Clicked="OnSignOutClicked"  
+                    BackgroundColor="red" 
+                    TextColor="White" 
+                    FontSize="15" 
+                    FontAttributes="Bold" 
+                    VerticalOptions="Center" />
         </Grid>
     </Shell.FlyoutFooter>
 

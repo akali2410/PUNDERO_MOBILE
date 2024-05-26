@@ -9,13 +9,29 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            
         </Grid.RowDefinitions>
+        
+        <maps:Map             
+            x:Name="map" 
+            Grid.RowSpan="2" 
+            VerticalOptions="FillAndExpand" 
+            HorizontalOptions="FillAndExpand"/>
 
-        <Switch x:Name="locationToggle" Toggled="OnToggled" Grid.Row="0" Margin="0"/>
+        <Switch 
+            x:Name="locationToggle"
+            Toggled="OnToggled" 
+            Grid.Row="0" 
+            Margin="10" 
+            HorizontalOptions="End" 
+            VerticalOptions="Start"/>
 
-        <maps:Map x:Name="map" Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-
-        <Button Text="Optimize Route" BackgroundColor="#1976d2" Clicked="OnOptimizeRouteButtonClicked" VerticalOptions="End" HorizontalOptions="Center" Margin="10"/>
+        <Button 
+            Text="Optimize Route" 
+            BackgroundColor="#1976d2" 
+            Clicked="OnOptimizeRouteButtonClicked" 
+            VerticalOptions="End" 
+            HorizontalOptions="Center" 
+            Margin="10"/>
     </Grid>
+
 </ContentPage>
