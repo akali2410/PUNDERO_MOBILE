@@ -4,7 +4,7 @@
              xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
              x:Class="Vehicle.MapPage"
-             Title="MapPage">
+             Title="Map">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,6 +16,6 @@
 
         <maps:Map x:Name="map" Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
 
-        <Button Text="Optimize Route" Clicked="OnOptimizeRouteButtonClicked" VerticalOptions="End" HorizontalOptions="Center" Margin="10"/>
+        <Button Text="Optimize Route" BackgroundColor="#1976d2" Clicked="OnOptimizeRouteButtonClicked" VerticalOptions="End" HorizontalOptions="Center" Margin="10"/>
     </Grid>
 </ContentPage>

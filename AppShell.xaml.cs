@@ -10,5 +10,14 @@
             Shell.SetForegroundColor(this, Colors.White);
             
         }
+        private async void OnSignOutClicked(object sender, EventArgs e)
+        {
+            // Clear the authentication token or any other user data
+            await SecureStorage.SetAsync("authToken", string.Empty);
+            await SecureStorage.SetAsync("driverId", string.Empty);
+
+            // Navigate to the login page
+            Application.Current.MainPage = new NavigationPage(new LoginPage());
+        }
     }
 }

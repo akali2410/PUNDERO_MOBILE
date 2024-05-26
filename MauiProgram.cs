@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
+
 using Vehicle;
 
 
@@ -17,6 +20,9 @@ namespace Vehicle
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 }).UseMauiMaps();
+
+
+
             builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<InvoicePage>();
             builder.Services.AddSingleton<InTransitInvoicePage>();

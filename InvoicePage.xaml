@@ -2,32 +2,46 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Vehicle.InvoicePage"
-             Title="Invoices">
+             Title="Approved Invoices">
     <ContentPage.Content>
+        <ScrollView>
         <StackLayout>
-            <Label x:Name="NoInvoicesLabel" Text="No invoices available" IsVisible="False" HorizontalOptions="Center" VerticalOptions="Center" />
-            <CollectionView ItemsSource="{Binding Invoices}">
+            <Label x:Name="NoInvoicesLabel" 
+                   Text="No invoices available" 
+                   IsVisible="False" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="CenterAndExpand" 
+                   FontSize="Medium" 
+                   TextColor="Gray" />
+            <CollectionView ItemsSource="{Binding Invoices}" Margin="0,10,0,0">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Padding="10" Margin="10" BorderColor="LightGray" CornerRadius="10">
+                        <Frame Padding="15" Margin="20" BorderColor="LightGray" CornerRadius="15" HasShadow="True" BackgroundColor="White">
                             <StackLayout>
-                                <Label Text="Invoice ID:" FontAttributes="Bold"/>
-                                <Label Text="{Binding IdInvoice}" />
-                                <Label Text="Store Name:" FontAttributes="Bold"/>
-                                <Label Text="{Binding StoreName}" />
-                                <Label Text="Warehouse Name:" FontAttributes="Bold"/>
-                                <Label Text="{Binding WarehouseName}" />
-                                <Label Text="Issue Date:" FontAttributes="Bold"/>
-                                <Label Text="{Binding IssueDate, StringFormat='{0:dd/MM/yyyy}'}" />
-                                <Button Text="Mark as In Transport"
-                                        BackgroundColor="LightBlue"
+                                <Label Text="Invoice ID:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding IdInvoice}" TextColor="Gray"/>
+                                <Label Text="Store Name:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding StoreName}" TextColor="Gray"/>
+                                <Label Text="Warehouse Name:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding WarehouseName}" TextColor="Gray"/>
+                                <Label Text="Issue Date:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding IssueDate, StringFormat='{0:dd/MM/yyyy}'}" TextColor="Gray"/>
+                                    <Button Text="Mark as In Transport"
+                                        BackgroundColor="#1976d2"
+                                        TextColor="White"
                                         CommandParameter="{Binding IdInvoice}"
-                                        Clicked="OnChangeStatusButtonClicked"/>
+                                        Clicked="OnChangeStatusButtonClicked"
+                                        CornerRadius="5"
+                                        FontAttributes="Bold"
+                                        Margin="0,10,0,0"
+                                        Padding="10">
+                                    </Button>
                             </StackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </StackLayout>
+        </ScrollView>
     </ContentPage.Content>
 </ContentPage>

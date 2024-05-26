@@ -126,7 +126,7 @@ public partial class MapPage : ContentPage
             {
                 _cancelTokenSource = new CancellationTokenSource(); // New token for each request
 
-                var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
                 var location = await Geolocation.GetLocationAsync(request, _cancelTokenSource.Token);
 
                 if (location != null)

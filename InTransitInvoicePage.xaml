@@ -4,30 +4,42 @@
              x:Class="Vehicle.InTransitInvoicePage"
              Title="In Transit Invoices">
     <ContentPage.Content>
+        <ScrollView> 
         <StackLayout>
-            <Label x:Name="NoInvoicesLabel" Text="No in-transit invoices available" IsVisible="False" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label x:Name="NoInvoicesLabel" 
+                   Text="No invoices available" 
+                   IsVisible="False" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="CenterAndExpand" 
+                   FontSize="Medium" 
+                   TextColor="Gray" />
             <CollectionView ItemsSource="{Binding InTransitInvoices}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Padding="10" Margin="10" BorderColor="LightGray" CornerRadius="10">
+                        <Frame Padding="15" Margin="20" BorderColor="LightGray" CornerRadius="15" HasShadow="True" BackgroundColor="White">
                             <StackLayout>
-                                <Label Text="Invoice ID:" FontAttributes="Bold"/>
-                                <Label Text="{Binding IdInvoice}" />
-                                <Label Text="Store Name:" FontAttributes="Bold"/>
-                                <Label Text="{Binding StoreName}" />
-                                <Label Text="Warehouse Name:" FontAttributes="Bold"/>
-                                <Label Text="{Binding WarehouseName}" />
-                                <Label Text="Issue Date:" FontAttributes="Bold"/>
-                                <Label Text="{Binding IssueDate, StringFormat='{0:dd/MM/yyyy}'}" />
+                                <Label Text="Invoice ID:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding IdInvoice}" TextColor="Gray"/>
+                                <Label Text="Store Name:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding StoreName}" TextColor="Gray"/>
+                                <Label Text="Warehouse Name:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding WarehouseName}" TextColor="Gray"/>
+                                <Label Text="Issue Date:" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding IssueDate, StringFormat='{0:dd/MM/yyyy}'}" TextColor="Gray"/>
                                 <Button Text="Mark as Delivered"
-                                        BackgroundColor="LightBlue"
+                                        BackgroundColor="#1976d2"
                                         CommandParameter="{Binding IdInvoice}"
-                                        Clicked="OnChangeStatusButtonClicked"/>
+                                        Clicked="OnChangeStatusButtonClicked"
+                                        CornerRadius="5"
+                                        FontAttributes="Bold"
+                                        Margin="0,10,0,0"
+                                        Padding="10"/>
                             </StackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </StackLayout>
+        </ScrollView>
     </ContentPage.Content>
 </ContentPage>
