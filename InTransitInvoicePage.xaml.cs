@@ -111,7 +111,7 @@ public partial class InTransitInvoicePage : ContentPage
         {
             try
             {
-                await _punderoApiService.UpdateInvoiceStatusAsync(invoiceId, 4); // Set status to "Delivered"
+                await _punderoApiService.UpdateInvoiceStatusAsync(invoiceId, 5); // Set status to "Delivered"
                 await DisplayAlert("Success", "Invoice status updated.", "OK");
 
                 var invoice = InTransitInvoices.FirstOrDefault(i => i.IdInvoice == invoiceId);

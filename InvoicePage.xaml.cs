@@ -109,7 +109,7 @@ public partial class InvoicePage : ContentPage
         {
             try
             {
-                await _punderoApiService.UpdateInvoiceStatusAsync(invoiceId, 3); // Set status to "In Transport"
+                await _punderoApiService.UpdateInvoiceStatusAsync(invoiceId, 4); // Set status to "In Transport"
                 await DisplayAlert("Success", "Invoice status updated.", "OK");
 
                 var invoice = Invoices.FirstOrDefault(i => i.IdInvoice == invoiceId);

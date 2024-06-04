@@ -126,7 +126,7 @@ public partial class MapPage : ContentPage
             {
                 _cancelTokenSource = new CancellationTokenSource(); // New token for each request
 
-                var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
+                var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(1));
                 var location = await Geolocation.GetLocationAsync(request, _cancelTokenSource.Token);
 
                 if (location != null)
@@ -141,7 +141,7 @@ public partial class MapPage : ContentPage
                     LoadInTransitStores(); // Reload pins to reflect any changes
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(10)); // Wait 10 seconds before next request
+                await Task.Delay(TimeSpan.FromSeconds(1)); // Wait 10 seconds before next request
             }
         }
         catch (FeatureNotSupportedException fnsEx)
@@ -282,7 +282,7 @@ public partial class MapPage : ContentPage
             {
                 foreach (var invoice in invoices)
                 {
-                    if (invoice.IdStatus == 3) // Only add pins for in-transit stores
+                    if (invoice.IdStatus == 4) // Only add pins for in-transit stores
                     {
                         var location = new Location(invoice.StoreLatitude, invoice.StoreLongitude);
                         var pin = new Pin

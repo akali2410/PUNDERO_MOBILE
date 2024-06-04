@@ -53,7 +53,6 @@ public partial class LoginPage : ContentPage
                         // Navigate to main page or perform other actions with the token
                         Application.Current.MainPage = new AppShell();
                         await Shell.Current.GoToAsync("//MainPage");
-
                     }
                     else
                     {
